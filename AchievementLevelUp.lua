@@ -4,13 +4,15 @@ print(">>> Loading AchievementLevelUp, https://www.gswxy.com")
 local CHECK_INTERVAL = 60000 -- 可配置项，定时检查间隔，单位为毫秒（默认一分钟）
 local MIN_LEVEL = 10
 local MAX_LEVEL = 79
+local MAX_ACCUMULATED_PROBABILITY = 1 -- 可选的最大累积概率限制
 
 -- 基础概率
-local baseProbability = 0.152 -- 可配置项，10级时的基础概率调整为15.2%，在玩家在10级到79级之间获得100个成就的情况下，平均可获得大约10次升级奖励
+local baseProbability = 0.3 -- 可配置项，假设10级时的基础概率调整为15.2%，在玩家在10级到79级之间获得100个成就的情况下，平均可获得大约10次升级奖励
 local k = math.log(10) / (MAX_LEVEL - MIN_LEVEL) -- 计算得到的衰减系数
 
--- 保存玩家的成就数量
+-- 保存玩家的成就数量和累积概率
 local playerAchievementCounts = {}
+local playerAccumulatedProbabilities = {}
 
 -- 设定概率函数，根据等级计算概率
 local function getUpgradeProbability(level)
@@ -45,6 +47,10 @@ local function CheckAchievementChange(eventId, delay, repeats, player)
         playerAchievementCounts[playerId] = currentAchievementCount
     end
 
+    if playerAccumulatedProbabilities[playerId] == nil then
+        playerAccumulatedProbabilities[playerId] = 0
+    end
+
     if currentAchievementCount > playerAchievementCounts[playerId] then
         playerAchievementCounts[playerId] = currentAchievementCount
         local currentLevel = player:GetLevel()
@@ -54,6 +60,13 @@ local function CheckAchievementChange(eventId, delay, repeats, player)
         end
 
         local probability = getUpgradeProbability(currentLevel)
+        probability = probability + playerAccumulatedProbabilities[playerId]
+
+        -- 限制最大累积概率
+        if probability > MAX_ACCUMULATED_PROBABILITY then
+            probability = MAX_ACCUMULATED_PROBABILITY
+        end
+
         local rand = math.random()
         
         if rand < probability then
@@ -62,23 +75,30 @@ local function CheckAchievementChange(eventId, delay, repeats, player)
                 newLevel = MAX_LEVEL
             end
             player:SetLevel(newLevel)
-            player:SendBroadcastMessage("恭喜你！检测到您的成就数量增加，经过克罗米在虚空中漫长时间的摇骰子，很幸运您获得了升级奖励，您现在升到" .. newLevel .. "级了！当前升级触发概率：" .. string.format("%.2f", probability * 100) .. "%")
+            player:SendBroadcastMessage("恭喜你！检测到您的成就数量增加，经过克罗米在虚空中漫长时间的摇骰子，很幸运您获得了升级奖励，您现在升到" .. newLevel .. "级了！当前升级触发概率：基础概率 " .. string.format("%.2f", getUpgradeProbability(currentLevel) * 100) .. "% + 累加概率 " .. string.format("%.2f", playerAccumulatedProbabilities[playerId] * 100) .. "% = 合计 " .. string.format("%.2f", probability * 100) .. "%")
             logAchievementReward(player:GetGUIDLow(), currentLevel, newLevel, probability)
+            playerAccumulatedProbabilities[playerId] = 0 -- 重置累积概率
         else
-            player:SendBroadcastMessage("检测到您的成就数量增加，经过克罗米在虚空中漫长时间的摇骰子，很可惜没有获得升级奖励，当前升级触发概率：" .. string.format("%.2f", probability * 100) .. "%")
+            player:SendBroadcastMessage("检测到您的成就数量增加，经过克罗米在虚空中漫长时间的摇骰子，很可惜没有获得升级奖励，当前升级触发概率：基础概率 " .. string.format("%.2f", getUpgradeProbability(currentLevel) * 100) .. "% + 累加概率 " .. string.format("%.2f", playerAccumulatedProbabilities[playerId] * 100) .. "% = 合计 " .. string.format("%.2f", probability * 100) .. "%")
+            playerAccumulatedProbabilities[playerId] = probability -- 累积概率
         end
     end
 end
 
 -- 玩家登录时触发的函数
 local function OnPlayerLogin(event, player)
-    playerAchievementCounts[player:GetGUIDLow()] = player:GetCompletedAchievementsCount()
+    local playerId = player:GetGUIDLow()
+    playerAchievementCounts[playerId] = player:GetCompletedAchievementsCount()
+    if playerAccumulatedProbabilities[playerId] == nil then
+        playerAccumulatedProbabilities[playerId] = 0
+    end
     player:RegisterEvent(CheckAchievementChange, CHECK_INTERVAL, 0)
 end
 
 -- 玩家登出时触发的函数
 local function OnPlayerLogout(event, player)
-    playerAchievementCounts[player:GetGUIDLow()] = nil
+    local playerId = player:GetGUIDLow()
+    playerAchievementCounts[playerId] = nil
     player:RemoveEvents()
 end
 
