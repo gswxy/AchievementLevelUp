@@ -51,7 +51,7 @@
 <pre class="code-block-wrapper"><div class="code-block-header"><span class="code-block-header__lang"></span><span class="code-block-header__copy"></span></div><code class="hljs code-block-body "><span class="hljs-attr">totalProbability</span> = min(totalProbability, <span class="hljs-number">1</span>)
 </code></pre>
 <h3>日志记录</h3>
-<p>当玩家升级或未能升级时，系统将记录相关信息到日志文件 <code>AchievementLevelUp.log</code>。日志格式如下：</p>
+<p>当玩家升级时，系统将记录相关信息到日志文件 <code>AchievementLevelUp.log</code>。日志格式如下：</p>
 <pre class="code-block-wrapper"><div class="code-block-header"><span class="code-block-header__lang"></span><span class="code-block-header__copy"></span></div><code class="hljs code-block-body ">[<span class="hljs-string">时间戳</span>] <span class="hljs-attr">PlayerID:</span> <span class="hljs-string">玩家ID,</span> <span class="hljs-attr">CurrentLevel:</span> <span class="hljs-string">当前等级,</span> <span class="hljs-attr">NewLevel:</span> <span class="hljs-string">新等级,</span> <span class="hljs-attr">Probability:</span> <span class="hljs-string">升级概率</span>
 </code></pre>
 <h3>事件处理</h3>
