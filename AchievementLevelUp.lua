@@ -7,7 +7,7 @@ local MAX_LEVEL = 79
 local MAX_ACCUMULATED_PROBABILITY = 1 -- 可选的最大累积概率限制
 
 -- 基础概率
-local baseProbability = 0.3 -- 可配置项，假设10级时的基础概率调整为15.2%，在玩家在10级到79级之间获得100个成就的情况下，平均可获得大约10次升级奖励
+local baseProbability = 0.3 -- 可配置项，定义基础概率
 local k = math.log(10) / (MAX_LEVEL - MIN_LEVEL) -- 计算得到的衰减系数
 
 -- 保存玩家的成就数量和累积概率
@@ -105,5 +105,3 @@ end
 -- 注册事件
 RegisterPlayerEvent(3, OnPlayerLogin) -- 3是玩家登录事件
 RegisterPlayerEvent(4, OnPlayerLogout) -- 4是玩家登出事件
-
-print(">>> AchievementLevelUp script loaded")
