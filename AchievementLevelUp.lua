@@ -3,7 +3,7 @@ print(">>> Loading AchievementLevelUp, https://www.gswxy.com")
 -- 配置项
 local CHECK_INTERVAL = 60000 -- 可配置项，定时检查间隔，单位为毫秒（默认一分钟）
 local MIN_LEVEL = 10
-local MAX_LEVEL = 79
+local MAX_LEVEL = 80
 local MAX_ACCUMULATED_PROBABILITY = 1 -- 可选的最大累积概率限制
 
 -- 基础概率
